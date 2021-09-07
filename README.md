@@ -1,9 +1,9 @@
 # Visualize Data with a Heat Map
-*_Objective: Build a CodePen.io app that is functionally similar to this: https://codepen.io/freeCodeCamp/full/JEXgeY.
+*_Objective: Build a CodePen.io app that is functionally similar to this: https://codepen.io/freeCodeCamp/full/JEXgeY._*
 
-_*Fulfill the below user stories and get all of the tests to pass. Give it your own personal style.
+*_Fulfill the below user stories and get all of the tests to pass. Give it your own personal style._*
 
-*_You can use HTML, JavaScript, CSS, and the D3 svg-based visualization library. Required (non-virtual) DOM elements are queried on the moment of each test. If you use a frontend framework (like Vue for example), the test results may be inaccurate for dynamic content. We hope to accommodate them eventually, but these frameworks are not currently supported for D3 projects.
+*_You can use HTML, JavaScript, CSS, and the D3 svg-based visualization library. Required (non-virtual) DOM elements are queried on the moment of each test. If you use a frontend framework (like Vue for example), the test results may be inaccurate for dynamic content. We hope to accommodate them eventually, but these frameworks are not currently supported for D3 projects._*
 
 ## User Story #1: 
 My heat map should have a title with a corresponding id="title".
