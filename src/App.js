@@ -11,7 +11,7 @@ export default function App() {
   );
   const [req] = useState(new XMLHttpRequest());
 
-  const width = 1600;
+  const width = 1800;
   const height = 800;
   const padding = 140;
   useEffect(() => {
@@ -40,17 +40,20 @@ export default function App() {
     let svg = d3.select('svg');
 
     let color = [
-      '#ef5350',
-      '#EC407A',
-      '#AB47BC',
-      '#7E57C2',
-      '#5C6BC0',
-      '#42A5F5',
-      '#26C6DA',
-      '#26A69A',
-      '#D4E157',
-      '#FFEE58',
-      '#FFA726',
+      '#045a8d',
+      '#2b8cbe',
+      '#74a9cf',
+      '#bdc9e1',
+      '#f1eef6',
+      '#fff7ec',
+      '#fee8c8',
+      '#fdd49e',
+      '#fdbb84',
+      '#fc8d59',
+      '#ef6548',
+      '#d7301f',
+      '#b30000',
+      '#7f0000',
     ];
 
     let colorScale = d3.scaleQuantize().range(color);
@@ -71,11 +74,12 @@ export default function App() {
 
       textContainer
         .append('text')
-        .attr('x', width - 1050)
+        .attr('x', width - 1200)
         .attr('y', height - 760)
         .attr('id', 'description')
         .text(`1753 - 2015: base temperature ${values.baseTemperature}℃`)
-        .style('font-size', '1.5em');
+        .style('font-size', '1.5em')
+        .style('text-align', 'center');
     };
 
     const drawCanvas = () => {
@@ -139,30 +143,30 @@ export default function App() {
           return 'translate(0,' + (height / 2 - i * 20) + ')';
         });
 
-      legendColors
-        .append('rect')
-        .attr('x', width - 530)
-        .attr('y', height - 200)
-        .attr('width', 18)
-        .attr('height', 18)
-        .style('fill', color);
+      // legendColors
+      //   .append('rect')
+      //   .attr('x', width - 530)
+      //   .attr('y', height - 200)
+      //   .attr('width', 18)
+      //   .attr('height', 18)
+      //   .style('fill', color);
 
-      legendColors
-        .append('text')
-        .attr('x', width - 530)
-        .attr('y', height - 500)
-        .attr('id', 'legend-sign')
-        .text((item) => {
-          if (item) {
-            return 'Heat';
-          } else {
-            return 'Cold';
-          }
-        })
-        .style('font-size', '0.7em');
+      // legendColors
+      //   .append('text')
+      //   .attr('x', width - 530)
+      //   .attr('y', height - 500)
+      //   .attr('id', 'legend-sign')
+      //   .text((item) => {
+      //     if (item) {
+      //       return 'Heat';
+      //     } else {
+      //       return 'Cold';
+      //     }
+      //   })
+      //   .style('font-size', '0.7em');
     };
     const drawBars = () => {
-      var barWidth = 25 + 'px';
+      var barWidth = 15 + 'px';
       var barHeight = 30 + 'px';
 
       const tooltip = d3
@@ -238,19 +242,17 @@ export default function App() {
         .call(yAxis)
         .attr('id', 'y-axis')
         .attr('transform', 'translate(' + padding + ',  0)')
-        .style('font-size', '18px');
-      // .style('text-anchor', 'end');
+        .style('font-size', '18px')
+        .style('text-anchor', 'end');
       return { xAxis, svg, yAxis };
     };
   }, []);
   return (
     <div>
-      <h2 className='text-center text-4xl p-4' id='title'>
+      <h2 id='title' style={{ textAlign: 'center' }}>
         Monthly Global Land-Surface Temperature
       </h2>
-      <svg className='App' id='div2'>
-        <text x={width - 900} y={height - 20}></text>
-      </svg>
+      <svg className='App' id='div2'></svg>
     </div>
   );
 }

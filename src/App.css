@@ -13,7 +13,7 @@ svg {
   border: 1px solid rgba(255, 255, 255, 0.28);
 }
 #tooltip {
-  font-size: .8em;
+  font-size: 0.8em;
   background: linear-gradient(180deg, #fcddf5 5%, #fdcbf1 50%, #ff99e7 100%);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.57);
   border-radius: 15px;
@@ -21,8 +21,21 @@ svg {
   padding: 5px;
 }
 .cell {
-  
 }
 .cell:hover {
   border: 2px solid black;
+}
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+}
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
 }
