@@ -5,7 +5,24 @@ body {
   align-items: center;
 }
 svg {
-  margin-top: 200px;
-  margin-left: 400px;
-  margin-right: 400px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.57);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+#tooltip {
+  font-size: .8em;
+  background: linear-gradient(180deg, #fcddf5 5%, #fdcbf1 50%, #ff99e7 100%);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.57);
+  border-radius: 15px;
+  border: 1px solid black;
+  padding: 5px;
+}
+.cell {
+  
+}
+.cell:hover {
+  border: 2px solid black;
 }

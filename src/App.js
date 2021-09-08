@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { pointer } from 'd3-selection';
-import { extent, timeMonth } from 'd3';
+import { extent } from 'd3';
 import * as d3 from 'd3';
 
 export default function App() {
@@ -13,17 +13,18 @@ export default function App() {
 
   const width = 1600;
   const height = 800;
-  const padding = 90;
+  const padding = 140;
   useEffect(() => {
     req.open('GET', url, true);
     req.onload = () => {
       data = JSON.parse(req.responseText);
-      values = data.monthlyVariance;
+      values = data;
       drawCanvas();
       generateScales();
       drawBars();
       generateAxis();
       infoText();
+      tooltipAndLegend();
     };
     req.send();
 
@@ -37,6 +38,22 @@ export default function App() {
     let yAxisScale;
 
     let svg = d3.select('svg');
+
+    let color = [
+      '#ef5350',
+      '#EC407A',
+      '#AB47BC',
+      '#7E57C2',
+      '#5C6BC0',
+      '#42A5F5',
+      '#26C6DA',
+      '#26A69A',
+      '#D4E157',
+      '#FFEE58',
+      '#FFA726',
+    ];
+
+    let colorScale = d3.scaleQuantize().range(color);
 
     const infoText = () => {
       let textContainer = d3
@@ -54,10 +71,10 @@ export default function App() {
 
       textContainer
         .append('text')
-        .attr('x', width - 850)
-        .attr('y', height - 560)
-        .attr('id', 'title')
-        .text('')
+        .attr('x', width - 1050)
+        .attr('y', height - 760)
+        .attr('id', 'description')
+        .text(`1753 - 2015: base temperature ${values.baseTemperature}℃`)
         .style('font-size', '1.5em');
     };
 
@@ -66,26 +83,26 @@ export default function App() {
       svg.attr('height', height);
     };
     const generateScales = () => {
-      values.forEach((item) => {
+      values.monthlyVariance.forEach((item) => {
         const parsedTime = item.month;
-        item.month = new Date(1750, parsedTime -1 );
+        item.month = new Date(1750, parsedTime - 1);
       });
-      const dataYear = values.map((item) => {
+      const dataYear = values.monthlyVariance.map((item) => {
         return new Date(item.year);
       });
       console.log(dataYear);
 
       yScale = d3
-        .scaleTime()
+        .scaleOrdinal()
         .domain(
-          extent(values)
+          extent(values.monthlyVariance, (item) => {
+            return item.month;
+          })
         )
-        .range([padding, height -  padding]);
-
-      console.log(yScale);
+        .range([padding, height - padding]);
 
       xScale = d3
-        .scaleLinear()
+        .scaleTime()
         .domain(extent(dataYear))
         .range([padding, width - padding]);
 
@@ -97,16 +114,57 @@ export default function App() {
       yAxisScale = d3
         .scaleTime()
         .domain(
-          extent(values, (item) => {
+          extent(values.monthlyVariance, (item) => {
             return item.month;
           })
         )
         .range([padding, height - padding]);
 
-      return { xScale, dataYear };
-    };
+      colorScale.domain(
+        d3.extent(values.monthlyVariance, (item) => {
+          return item.variance;
+        })
+      );
 
+      return { xScale, yScale, dataYear };
+    };
+    const tooltipAndLegend = () => {
+      const legend = d3.select('svg').append('svg').attr('id', 'legend');
+      const legendColors = legend
+        .selectAll('#legend')
+        .data(color)
+        .enter()
+        .append('g')
+        .attr('transform', function (d, i) {
+          return 'translate(0,' + (height / 2 - i * 20) + ')';
+        });
+
+      legendColors
+        .append('rect')
+        .attr('x', width - 530)
+        .attr('y', height - 200)
+        .attr('width', 18)
+        .attr('height', 18)
+        .style('fill', color);
+
+      legendColors
+        .append('text')
+        .attr('x', width - 530)
+        .attr('y', height - 500)
+        .attr('id', 'legend-sign')
+        .text((item) => {
+          if (item) {
+            return 'Heat';
+          } else {
+            return 'Cold';
+          }
+        })
+        .style('font-size', '0.7em');
+    };
     const drawBars = () => {
+      var barWidth = 25 + 'px';
+      var barHeight = 30 + 'px';
+
       const tooltip = d3
         .select('body')
         .append('div')
@@ -117,50 +175,57 @@ export default function App() {
 
       svg
         .selectAll('rect')
-        .data(values)
+        .data(values.monthlyVariance)
         .enter()
         .append('rect')
-        .attr('class', 'bar')
-        .attr('id', 'barOneDeath')
-        .attr('width', (width - 2 * padding) / values.length)
-        .attr('date', (item) => {
-          return item.date;
+        .attr('class', 'cell')
+        .attr('data-year', (item) => {
+          return item.year;
         })
-        .attr('new_deaths', (item) => {
-          return item.new_deaths;
+        .attr('data-month', (item) => {
+          return item.month;
         })
-        .attr('height', (item) => {
-          return yScale(item.new_deaths);
+        .attr('data-temp', (item) => {
+          return item.variance;
         })
-        .attr('x', (item, i) => {
-          return xScale(i);
+        .attr('width', barWidth)
+        .attr('height', barHeight)
+        .attr('x', (item) => {
+          return xAxisScale(item.year);
         })
         .attr('y', (item) => {
-          return height - padding - yScale(item.new_deaths);
+          return yAxisScale(item.month);
+        })
+        .style('fill', (item) => {
+          return colorScale(item.variance);
+        })
+        .on('mouseover', (event, item) => {
+          const [x, y] = pointer(event);
+          tooltip.transition().style('visibility', 'visible');
+          tooltip
+            .html(
+              '<p>Year: ' +
+                d3.format('d')(item.year) +
+                '</p><p>℃ in Month: ' +
+                (values.baseTemperature + item.variance).toFixed(2) +
+                '</p><p>℃ Differents: ' +
+                Math.max(item.variance.toFixed(2)) +
+                '</p><p>Month: ' +
+                d3.timeFormat('%B')(item.month) +
+                '</p>'
+            )
+            .style('left', x + 80 + 'px')
+            .style('top', y - 70 + 'px')
+            .style('position', 'absolute');
+        })
+        .on('mouseout', () => {
+          tooltip.transition().style('visibility', 'hidden');
         });
-      // .on('mouseover', (event, item) => {
-      //   const [x, y] = pointer(event);
-      //   tooltip.transition().style('visibility', 'visible');
-      //   tooltip
-      //     .html(
-      //       item.date +
-      //         ' - день/месяц <br/> ' +
-      //         item.new_deaths +
-      //         ' - Новые случаи'
-      //     )
-      //     .style('left', x[0] + 370 + 'px')
-      //     .style('top', y[1] + 470 + 'px');
-
-      //   document.querySelector('#tooltip').setAttribute('date', item.date);
-      // })
-      // .on('mouseout', () => {
-      //   tooltip.transition().style('visibility', 'hidden');
-      // });
     };
     const formatMonths = d3.timeFormat('%B');
     const generateAxis = () => {
       const xAxis = d3.axisBottom(xAxisScale).tickFormat(d3.format('d'));
-      const yAxisTwo = d3.axisLeft(yAxisScale).tickFormat(formatMonths);
+      const yAxis = d3.axisLeft(yAxisScale).tickFormat(formatMonths);
       svg
         .append('g')
         .call(xAxis)
@@ -170,16 +235,17 @@ export default function App() {
 
       svg
         .append('g')
-        .call(yAxisTwo)
+        .call(yAxis)
         .attr('id', 'y-axis')
         .attr('transform', 'translate(' + padding + ',  0)')
         .style('font-size', '18px');
-      return { xAxis, svg, yAxisTwo };
+      // .style('text-anchor', 'end');
+      return { xAxis, svg, yAxis };
     };
   }, []);
   return (
     <div>
-      <h2 className='text-center text-4xl p-4'>
+      <h2 className='text-center text-4xl p-4' id='title'>
         Monthly Global Land-Surface Temperature
       </h2>
       <svg className='App' id='div2'>
