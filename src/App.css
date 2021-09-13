@@ -5,7 +5,6 @@ body {
   align-items: center;
 }
 svg {
-  stroke-width: 1;
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.1);
@@ -23,10 +22,8 @@ svg {
   border: 1px solid black;
   padding: 5px;
 }
-#x-axis,
-#y-axis {
-  border: 3px solid rgba(255, 255, 255, 0.28);
-}
+
 .cell:hover {
-  border: 3px solid rgba(255, 255, 255, 0.28);
+  stroke: black;
+  stroke-width: .8px;
 }

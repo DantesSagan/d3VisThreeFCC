@@ -44,7 +44,6 @@ export default function App() {
       '#2b8cbe',
       '#74a9cf',
       '#bdc9e1',
-      '#f1eef6',
       '#fff7ec',
       '#fee8c8',
       '#fdd49e',
@@ -79,7 +78,8 @@ export default function App() {
         .attr('id', 'description')
         .text(`1753 - 2015: base temperature ${values.baseTemperature}℃`)
         .style('font-size', '1.5em')
-        .style('text-align', 'center');
+        .style('text-align', 'center')
+        .style('text-decoration', 'underline');
 
       textContainer
         .append('text')
@@ -92,25 +92,30 @@ export default function App() {
       svg.attr('width', width);
       svg.attr('height', height);
     };
+    const yearParse = d3.timeParse('%Y');
+    const monthParse = d3.timeParse('%b');
+
     const generateScales = () => {
       values.monthlyVariance.forEach((item) => {
         const parsedTime = item.month;
         item.month = new Date(1753, parsedTime - 1);
       });
+
       const dataYear = values.monthlyVariance.map((item) => {
         return new Date(item.year);
       });
+
       console.log(dataYear);
 
       yScale = d3
-        .scaleTime()
+        .scaleLinear()
         .domain(
           extent(values.monthlyVariance, (item) => {
             return item.month;
           })
         )
         .range([padding, height - padding]);
-        
+
       yAxisScale = d3
         .scaleTime()
         .domain(
@@ -216,11 +221,12 @@ export default function App() {
         .attr('transform', 'translate(' + 600 + ',' + 750 + ')')
         .call(xAxisLegend);
     };
+    const xValue = () => yearParse(values.monthlyVariance.year);
+    const xMap = (d) => xScale(xValue(d));
+    const yValue = () => monthParse(values.monthlyVariance.month - 1);
+    const yMap = (d) => yScale(yValue(d));
 
     const drawCell = () => {
-      var barWidth = 15 + 'px';
-      var barHeight = 40 + 'px';
-
       const tooltip = d3
         .select('body')
         .append('div')
@@ -235,23 +241,17 @@ export default function App() {
         .enter()
         .append('rect')
         .attr('class', 'cell')
-        .attr('data-year', (item) => {
-          return item.year;
-        })
-        .attr('data-month', (item) => {
-          return item.month;
-        })
-        .attr('data-temp', (item) => {
-          return values.baseTemperature + item.variance;
-        })
-        .attr('width', barWidth)
-        .attr('height', barHeight)
-        .attr('x', (item) => {
+        .attr('data-year', (item) => item.year)
+        .attr('data-month', (item) => item.month - 1)
+        .attr('data-temp', (item) => values.baseTemperature + item.variance)
+        .attr('width', (item) => {
           return xScale(item.year);
         })
-        .attr('y', (item) => {
+        .attr('height', (item) => {
           return yScale(item.month);
         })
+        .attr('x', (item) => xMap(item))
+        .attr('y', (item) => yMap(item))
         .style('fill', (item) => {
           return colorScale(item.variance);
         })
@@ -278,22 +278,30 @@ export default function App() {
           tooltip.transition().style('visibility', 'hidden');
         });
     };
-    const formatMonths = d3.timeFormat('%B');
+
     const generateAxis = () => {
-      const xAxis = d3.axisBottom(xAxisScale).tickFormat(d3.format('d'));
-      const yAxis = d3.axisLeft(yAxisScale).tickFormat(formatMonths);
+      const formatMonths = d3.timeFormat('%B');
+      const formatYear = d3.timeFormat('%d');
+      const xAxis = d3
+        .axisBottom(xAxisScale)
+        .tickFormat(formatYear)
+        .tickSize(16, 0);
+      const yAxis = d3
+        .axisLeft(yAxisScale)
+        .tickFormat(formatMonths)
+        .tickSize(16, 0);
       svg
         .append('g')
         .call(xAxis)
         .attr('id', 'x-axis')
-        .attr('transform', 'translate(0, ' + (height - padding) + ')')
+        .attr('transform', `translate(0, ${height - padding})`)
         .style('font-size', '18px');
 
       svg
         .append('g')
         .call(yAxis)
         .attr('id', 'y-axis')
-        .attr('transform', 'translate(' + padding + ',  0)')
+        .attr('transform', `translate(${padding},  0)`)
         .style('font-size', '18px')
         .style('text-anchor', 'end');
       return { xAxis, svg, yAxis };
