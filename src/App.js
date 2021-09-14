@@ -48,8 +48,6 @@ export default function App() {
       '#74a9cf',
       '#bdc9e1',
       '#fff7ec',
-      '#fee8c8',
-      '#fdd49e',
       '#fdbb84',
       '#fc8d59',
       '#ef6548',
@@ -201,7 +199,7 @@ export default function App() {
         .attr('x', (item) => {
           return xScaleLegend(item[0] + 18.3);
         })
-        .attr('y', 728)
+        .attr('y', 722)
         .attr('width', (item) => {
           return xScaleLegend(item[1]) - xScaleLegend(item[0]);
         })
@@ -229,7 +227,7 @@ export default function App() {
         .append('rect')
         .attr('class', 'cell')
         .attr('data-year', (item) => formatYear(item.year))
-        .attr('data-month', (item) => formatMonth(parseMonth(item.month)))
+        .attr('data-month', (item) => item.month - 1)
         .attr('data-temp', (item) => values.baseTemperature + item.variance)
         .attr('width', 5 + 'px')
         .attr('height', 42 + 'px')
@@ -240,9 +238,16 @@ export default function App() {
         })
         .on('mouseover', (event, item) => {
           const [x, y] = pointer(event);
-          tooltip.transition().style('visibility', 'visible');
           tooltip
-            .attr('data-year', formatYear(parseYear(values.monthlyVariance.year)))
+            .transition()
+            .style('visibility', 'visible')
+            .attr('data-year', item.year)
+            .attr('data-temp', item.variance);
+          tooltip
+            .attr(
+              'data-year',
+              formatYear(parseYear(values.monthlyVariance.year))
+            )
             .style('left', x + 80 + 'px')
             .style('top', y - 70 + 'px')
             .style('position', 'absolute')
