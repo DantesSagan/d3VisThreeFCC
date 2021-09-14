@@ -25,5 +25,5 @@ svg {
 
 .cell:hover {
   stroke: black;
-  stroke-width: .8px;
+  stroke-width: 0.8px;
 }

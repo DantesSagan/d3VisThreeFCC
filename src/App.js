@@ -14,6 +14,7 @@ export default function App() {
   const width = 1800;
   const height = 800;
   const padding = 140;
+
   useEffect(() => {
     req.open('GET', url, true);
     req.onload = () => {
@@ -34,10 +35,12 @@ export default function App() {
     let xScale;
     let yScale;
 
-    let xAxisScale;
-    let yAxisScale;
-
     let svg = d3.select('svg');
+
+    const parseYear = d3.timeParse('%Y');
+    const parseMonth = d3.timeParse('%m');
+    const formatMonth = d3.timeFormat('%B');
+    const formatYear = d3.format('d');
 
     let color = [
       '#045a8d',
@@ -92,15 +95,8 @@ export default function App() {
       svg.attr('width', width);
       svg.attr('height', height);
     };
-    const yearParse = d3.timeParse('%Y');
-    const monthParse = d3.timeParse('%b');
 
     const generateScales = () => {
-      values.monthlyVariance.forEach((item) => {
-        const parsedTime = item.month;
-        item.month = new Date(1753, parsedTime - 1);
-      });
-
       const dataYear = values.monthlyVariance.map((item) => {
         return new Date(item.year);
       });
@@ -108,30 +104,25 @@ export default function App() {
       console.log(dataYear);
 
       yScale = d3
-        .scaleLinear()
-        .domain(
-          extent(values.monthlyVariance, (item) => {
-            return item.month;
-          })
-        )
-        .range([padding, height - padding]);
-
-      yAxisScale = d3
-        .scaleTime()
-        .domain(
-          extent(values.monthlyVariance, (item) => {
-            return item.month;
-          })
-        )
+        .scaleBand()
+        .domain([
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
+        ])
         .range([padding, height - padding]);
 
       xScale = d3
         .scaleTime()
-        .domain(extent(dataYear))
-        .range([padding, width - padding]);
-
-      xAxisScale = d3
-        .scaleLinear()
         .domain(extent(dataYear))
         .range([padding, width - padding]);
 
@@ -221,10 +212,6 @@ export default function App() {
         .attr('transform', 'translate(' + 600 + ',' + 750 + ')')
         .call(xAxisLegend);
     };
-    const xValue = () => yearParse(values.monthlyVariance.year);
-    const xMap = (d) => xScale(xValue(d));
-    const yValue = () => monthParse(values.monthlyVariance.month - 1);
-    const yMap = (d) => yScale(yValue(d));
 
     const drawCell = () => {
       const tooltip = d3
@@ -241,17 +228,13 @@ export default function App() {
         .enter()
         .append('rect')
         .attr('class', 'cell')
-        .attr('data-year', (item) => item.year)
-        .attr('data-month', (item) => item.month - 1)
+        .attr('data-year', (item) => formatYear(item.year))
+        .attr('data-month', (item) => formatMonth(parseMonth(item.month)))
         .attr('data-temp', (item) => values.baseTemperature + item.variance)
-        .attr('width', (item) => {
-          return xScale(item.year);
-        })
-        .attr('height', (item) => {
-          return yScale(item.month);
-        })
-        .attr('x', (item) => xMap(item))
-        .attr('y', (item) => yMap(item))
+        .attr('width', 5 + 'px')
+        .attr('height', 42 + 'px')
+        .attr('x', (item) => xScale(formatYear(item.year)))
+        .attr('y', (item) => yScale(formatMonth(parseMonth(item.month))))
         .style('fill', (item) => {
           return colorScale(item.variance);
         })
@@ -259,20 +242,21 @@ export default function App() {
           const [x, y] = pointer(event);
           tooltip.transition().style('visibility', 'visible');
           tooltip
+            .attr('data-year', formatYear(parseYear(values.monthlyVariance.year)))
+            .style('left', x + 80 + 'px')
+            .style('top', y - 70 + 'px')
+            .style('position', 'absolute')
             .html(
               '<p>Year: ' +
-                d3.format('d')(item.year) +
+                formatYear(item.year) +
                 '</p><p>℃ in Month: ' +
                 (values.baseTemperature + item.variance).toFixed(2) +
                 '</p><p>℃ Differents: ' +
                 Math.max(item.variance.toFixed(2)) +
                 '</p><p>Month: ' +
-                d3.timeFormat('%B')(item.month) +
+                formatMonth(parseMonth(item.month)) +
                 '</p>'
-            )
-            .style('left', x + 80 + 'px')
-            .style('top', y - 70 + 'px')
-            .style('position', 'absolute');
+            );
         })
         .on('mouseout', () => {
           tooltip.transition().style('visibility', 'hidden');
@@ -280,16 +264,14 @@ export default function App() {
     };
 
     const generateAxis = () => {
-      const formatMonths = d3.timeFormat('%B');
-      const formatYear = d3.timeFormat('%d');
       const xAxis = d3
-        .axisBottom(xAxisScale)
+        .axisBottom(xScale)
+        .tickSizeOuter(0)
+        .tickSizeInner(3)
+        .ticks(12)
         .tickFormat(formatYear)
-        .tickSize(16, 0);
-      const yAxis = d3
-        .axisLeft(yAxisScale)
-        .tickFormat(formatMonths)
-        .tickSize(16, 0);
+        .tickSize(10, 1);
+      const yAxis = d3.axisLeft(yScale).ticks(12).tickSize(10, 1);
       svg
         .append('g')
         .call(xAxis)
