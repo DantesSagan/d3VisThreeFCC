@@ -299,7 +299,7 @@ export default function App() {
       <h2 id='title' style={{ textAlign: 'center' }}>
         Monthly Global Land-Surface Temperature
       </h2>
-      <svg className='App' id='div2' style={{ textAlign: 'center' }}></svg>
+      <svg className='App' id='div2' style={{ textAlign: 'center' }}></svg>{' '}
     </div>
   );
 }
